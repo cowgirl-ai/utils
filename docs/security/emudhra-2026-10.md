@@ -14,9 +14,10 @@ Custom CA overrides and the operating system trust store need separate review.
 
 Run `python -m unittest discover -s tests -p 'test_tls*.py'` for offline trust checks.
 The checks inspect the actual HTTPX context and Requests CA file; they make no API
-requests. Before installing dependencies, bootstrap pip 26.2.2 or newer using the
-hash-pinned wheel in the PSF advisory below. App Engine's managed build installer
-and base-image trust remain provider responsibilities; an application certifi pin
+requests. Before installing dependencies, use Python 3.10 or newer and bootstrap
+pip 26.2.2 or newer using the hash-pinned wheel in the PSF advisory below. App
+Engine's managed build installer and base-image trust remain provider
+responsibilities; an application certifi pin
 does not update either one.
 
 CI runs the complete `tests` directory with `python -m pytest tests` on Python
@@ -37,3 +38,8 @@ would not fix this path. The offline test checks the credentials and PEM handed 
 the real SDK transport, without connecting to Google Cloud.
 
 - [gRPC TLS credentials](https://grpc.github.io/grpc/python/grpc.html#grpc.ssl_channel_credentials)
+
+`MANIFEST.in` includes `requirements.txt` in source distributions because `setup.py`
+reads the dependency list from that file. This preserves all dependency pins,
+including certifi, when a wheel is rebuilt from a source distribution. Verify both
+package formats before publishing a new release; existing releases are unchanged.
