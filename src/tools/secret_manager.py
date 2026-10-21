@@ -1,4 +1,12 @@
 import os
+from pathlib import Path
+
+import certifi
+import grpc
+from google.cloud.secretmanager_v1.services.secret_manager_service.transports.grpc import (
+    SecretManagerServiceGrpcTransport,
+)
+
 import google.auth # type: ignore
 from google.cloud import secretmanager
 
@@ -19,7 +27,13 @@ class SecretManager:
         can be a version number as a string (e.g. "5") or an alias (e.g. "latest").
         """
 
-        client = secretmanager.SecretManagerServiceClient(credentials=self.credentials)
+        transport = SecretManagerServiceGrpcTransport(
+            credentials=self.credentials,
+            ssl_channel_credentials=grpc.ssl_channel_credentials(
+                root_certificates=Path(certifi.where()).read_bytes()
+            ),
+        )
+        client = secretmanager.SecretManagerServiceClient(transport=transport)
 
         # Build the resource name of the secret version & return payload
         name = f"projects/{self.project_id}/secrets/{secret_id}/versions/{version_id}"
